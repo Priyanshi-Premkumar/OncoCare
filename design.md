@@ -113,7 +113,7 @@ treatment_history - treatment_id (PK)
 
 ## 5. Deployment Architecture (AWS)
 
-Cloud Components: - EC2 / ECS -- Service hosting 
+- Cloud Components: - EC2 / ECS -- Service hosting 
 - RDS -- Managed PostgreSQL 
 - S3 -- Model storage 
 - Docker -- Containerization
