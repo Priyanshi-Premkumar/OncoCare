@@ -1,0 +1,86 @@
+name: Deploy LiverCare to AWS ECS
+
+on:
+  push:
+    branches: [main]
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+jobs:
+  build-and-push:
+    name: Build & Push to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 🔥 FRONTEND
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./livercare-full/frontend
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/livercare/frontend:latest
+
+      # 🔥 BACKEND
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./livercare-full/backend
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/livercare/backend:latest
+
+      # 🔥 AI ENGINE
+      - name: Build and push ai-engine
+        uses: docker/build-push-action@v5
+        with:
+          context: ./livercare-full/ai-engine
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/livercare/ai-engine:latest
+
+  deploy:
+    name: Deploy to ECS Fargate
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy ai-engine
+        run: |
+          aws ecs update-service \
+            --cluster livercare-cluster \
+            --service livercare-ai-engine \
+            --force-new-deployment
+
+      - name: Deploy backend
+        run: |
+          aws ecs update-service \
+            --cluster livercare-cluster \
+            --service livercare-backend \
+            --force-new-deployment
+
+      - name: Deploy frontend
+        run: |
+          aws ecs update-service \
+            --cluster livercare-cluster \
+            --service livercare-frontend \
+            --force-new-deployment
