@@ -35,7 +35,7 @@ server:
 # AI Drift Engine (Python FastAPI)
 ai:
   drift-engine:
-    base-url: ${AI_ENGINE_URL:http://localhost:8000}
+    base-url: ${AI_ENGINE_URL}
     timeout-seconds: 15
     retry-attempts: 3
 
