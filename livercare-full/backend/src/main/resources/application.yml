@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: livercare-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/livercaredb
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  security:
+    user:
+      name: ${ADMIN_USER:admin}
+      password: ${ADMIN_PASS:livercare2024}
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+# AI Drift Engine (Python FastAPI)
+ai:
+  drift-engine:
+    base-url: ${AI_ENGINE_URL:http://localhost:8000}
+    timeout-seconds: 15
+    retry-attempts: 3
+
+# Amazon Bedrock
+aws:
+  region: ${AWS_REGION:us-east-1}
+  bedrock:
+    model-id: anthropic.claude-3-sonnet-20240229-v1:0
+    max-tokens: 1024
+    enabled: ${BEDROCK_ENABLED:true}
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.realintel.livercare: DEBUG
+    software.amazon.awssdk: WARN

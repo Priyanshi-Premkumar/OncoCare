@@ -1,0 +1,40 @@
+{
+  "family": "livercare-backend",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn":      "arn:aws:iam::ACCOUNT_ID:role/LiverCareTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "livercare-backend",
+      "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/livercare-backend:latest",
+      "portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+      "environment": [
+        { "name": "AWS_REGION",      "value": "us-east-1" },
+        { "name": "BEDROCK_ENABLED", "value": "true" },
+        { "name": "AI_ENGINE_URL",   "value": "http://livercare-ai-engine:8000" }
+      ],
+      "secrets": [
+        { "name": "DB_HOST", "valueFrom": "arn:aws:ssm:us-east-1:ACCOUNT_ID:parameter/livercare/db_host" },
+        { "name": "DB_PASS", "valueFrom": "arn:aws:ssm:us-east-1:ACCOUNT_ID:parameter/livercare/db_pass" },
+        { "name": "ADMIN_PASS", "valueFrom": "arn:aws:ssm:us-east-1:ACCOUNT_ID:parameter/livercare/admin_pass" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group":  "/ecs/livercare-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/api/actuator/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3
+      }
+    }
+  ]
+}
