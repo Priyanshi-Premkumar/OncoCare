@@ -43,7 +43,7 @@ ai:
 aws:
   region: ${AWS_REGION:us-east-1}
   bedrock:
-    model-id: model-id: anthropic.claude-sonnet-4-5-20251001
+    model-id: anthropic.claude-sonnet-4-5-20251001
     max-tokens: 1024
     enabled: ${BEDROCK_ENABLED:true}
 
