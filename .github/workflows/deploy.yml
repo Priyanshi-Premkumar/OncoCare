@@ -27,7 +27,9 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 🔥 FRONTEND
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
@@ -35,7 +37,6 @@ jobs:
           push: true
           tags: ${{ env.ECR_REGISTRY }}/livercare/frontend:latest
 
-      # 🔥 BACKEND
       - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
@@ -43,7 +44,6 @@ jobs:
           push: true
           tags: ${{ env.ECR_REGISTRY }}/livercare/backend:latest
 
-      # 🔥 AI ENGINE
       - name: Build and push ai-engine
         uses: docker/build-push-action@v5
         with:
